@@ -31,12 +31,18 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "lint": "eslint nodes/ credentials/ --ext .ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "release": "release-it",
+    "release:dry": "release-it --dry-run",
+    "release:minor": "release-it minor",
+    "release:major": "release-it major"
   },
   "devDependencies": {
     "n8n-workflow": "*",
     "typescript": "^5.7.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "release-it": "^19.0.0",
+    "@release-it/conventional-changelog": "^10.0.0"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
