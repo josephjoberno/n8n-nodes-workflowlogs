@@ -38,11 +38,11 @@
     "release:major": "release-it major"
   },
   "devDependencies": {
-    "n8n-workflow": "*",
-    "typescript": "^5.7.0",
+    "@release-it/conventional-changelog": "^10.0.5",
     "@types/node": "^20.0.0",
-    "release-it": "^19.0.0",
-    "@release-it/conventional-changelog": "^10.0.0"
+    "n8n-workflow": "*",
+    "release-it": "^19.2.4",
+    "typescript": "^5.7.0"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
