@@ -4,7 +4,6 @@ import {
   INodeType,
   INodeTypeDescription,
   IDataObject,
-  NodeConnectionType,
   NodeOperationError,
 } from 'n8n-workflow';
 
@@ -20,8 +19,8 @@ export class N8nLogs implements INodeType {
     defaults: {
       name: 'n8nLogs',
     },
-    inputs: [NodeConnectionType.Main],
-    outputs: [NodeConnectionType.Main],
+    inputs: ['main'],
+    outputs: ['main'],
     credentials: [
       {
         name: 'n8nLogsApi',
