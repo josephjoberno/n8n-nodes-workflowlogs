@@ -40,11 +40,11 @@
   "devDependencies": {
     "@release-it/conventional-changelog": "^10.0.5",
     "@types/node": "^20.0.0",
-    "n8n-workflow": "*",
+    "n8n-workflow": "^1.0.0",
     "release-it": "^19.2.4",
     "typescript": "^5.7.0"
   },
   "peerDependencies": {
-    "n8n-workflow": "*"
+    "n8n-workflow": ">=1.0.0"
   }
 }
