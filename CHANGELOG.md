@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.3](https://github.com/josephjoberno/n8n-nodes-workflowlogs/compare/v0.2.0...v0.2.3) (2026-03-14)
+
+### Bug Fixes
+
+* bump version to 0.2.2 for npm publish ([b2233ec](https://github.com/josephjoberno/n8n-nodes-workflowlogs/commit/b2233ec49a50786577b7640feda9f695cae523f3))
+* **ci:** update dist paths in release workflow to match rename ([30b72a3](https://github.com/josephjoberno/n8n-nodes-workflowlogs/commit/30b72a35526c0e18676d4d2270207aa41013a773))
+* complete project rename from n8nLogs to WorkflowLogs ([13faefd](https://github.com/josephjoberno/n8n-nodes-workflowlogs/commit/13faefd6dbcd5c246ddbea89defe8868feed4449))
+* update node icon with transparent background for n8n compatibility ([43ecb71](https://github.com/josephjoberno/n8n-nodes-workflowlogs/commit/43ecb711d3f4ca8fad3c6a8af772d34d7f02b312))
+* update package.json references to match project rename ([0946a25](https://github.com/josephjoberno/n8n-nodes-workflowlogs/commit/0946a25db5ab9d48c9c43de1954ce06083914e8b))
+
 ## 0.2.0 (2026-03-13)
 
 ### Features
