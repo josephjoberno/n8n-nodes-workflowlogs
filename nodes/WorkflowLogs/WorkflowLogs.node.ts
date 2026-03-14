@@ -112,39 +112,39 @@ export class WorkflowLogs implements INodeType {
             description: 'Override the auto-detected severity level. Leave empty for auto-detection.',
           },
           {
-            displayName: 'Execution URL',
+            displayName: 'Execution URL (Override)',
             name: 'executionUrl',
             type: 'string',
             default: '',
-            description: 'URL to the n8n execution for quick access',
+            description: 'Override the auto-generated execution URL. Leave empty to use the auto-detected URL.',
           },
           {
-            displayName: 'Workflow ID',
+            displayName: 'Workflow ID (Override)',
             name: 'workflowId',
             type: 'string',
-            default: '={{$workflow.id}}',
-            description: 'The n8n workflow ID (auto-filled)',
+            default: '',
+            description: 'Override the auto-detected workflow ID. Leave empty to use the current workflow ID.',
           },
           {
-            displayName: 'Workflow Name',
+            displayName: 'Workflow Name (Override)',
             name: 'workflowName',
             type: 'string',
-            default: '={{$workflow.name}}',
-            description: 'The n8n workflow name (auto-filled)',
+            default: '',
+            description: 'Override the auto-detected workflow name. Leave empty to use the current workflow name.',
           },
           {
-            displayName: 'Execution ID',
+            displayName: 'Execution ID (Override)',
             name: 'executionId',
             type: 'string',
-            default: '={{$execution.id}}',
-            description: 'The n8n execution ID (auto-filled)',
+            default: '',
+            description: 'Override the auto-detected execution ID. Leave empty to use the current execution ID.',
           },
           {
-            displayName: 'Node Name',
+            displayName: 'Node Name (Override)',
             name: 'nodeName',
             type: 'string',
             default: '',
-            description: 'The name of the node that triggered this log',
+            description: 'Override the auto-detected node name. In Auto-Detect mode, extracted from Error Trigger data.',
           },
           {
             displayName: 'Node Type',
@@ -190,14 +190,25 @@ export class WorkflowLogs implements INodeType {
     const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
     const apiKey = credentials.apiKey as string;
 
+    // Auto-bind all available metadata from n8n context
+    const workflow = this.getWorkflow();
+    const executionId = this.getExecutionId();
+    const instanceBaseUrl = this.getInstanceBaseUrl().replace(/\/$/, '');
+    const executionUrl = `${instanceBaseUrl}/workflow/${workflow.id}/executions/${executionId}`;
+
     for (let i = 0; i < items.length; i++) {
       try {
         const mode = this.getNodeParameter('mode', i) as string;
         const logType = this.getNodeParameter('logType', i) as string;
         const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
 
+        // Auto-filled from n8n context — no user config needed
         const body: IDataObject = {
           type: logType,
+          workflowId: workflow.id?.toString(),
+          workflowName: workflow.name,
+          executionId,
+          executionUrl,
         };
 
         if (mode === 'autoDetect') {
@@ -206,12 +217,6 @@ export class WorkflowLogs implements INodeType {
           body.message = extractMessage(json, logType);
           body.stackTrace = extractStackTrace(json);
           body.nodeName = extractField(json, ['execution.lastNodeExecuted', 'lastNodeExecuted']) as string || undefined;
-          body.executionUrl = extractField(json, ['execution.url', 'executionUrl']) as string || undefined;
-
-          // Auto-fill workflow info from expressions
-          body.workflowId = additionalFields.workflowId || extractField(json, ['workflow.id', 'workflowId']) as string || undefined;
-          body.workflowName = additionalFields.workflowName || extractField(json, ['workflow.name', 'workflowName']) as string || undefined;
-          body.executionId = additionalFields.executionId || extractField(json, ['execution.id', 'executionId']) as string || undefined;
 
           // Always include the full input data in auto-detect mode
           body.payload = json;
@@ -220,9 +225,6 @@ export class WorkflowLogs implements INodeType {
           const message = this.getNodeParameter('message', i) as string;
           body.message = message;
 
-          if (additionalFields.workflowId) body.workflowId = additionalFields.workflowId;
-          if (additionalFields.workflowName) body.workflowName = additionalFields.workflowName;
-          if (additionalFields.executionId) body.executionId = additionalFields.executionId;
           if (additionalFields.stackTrace) body.stackTrace = additionalFields.stackTrace;
           if (additionalFields.nodeName) body.nodeName = additionalFields.nodeName;
           if (additionalFields.nodeType) body.nodeType = additionalFields.nodeType;
@@ -232,10 +234,13 @@ export class WorkflowLogs implements INodeType {
           }
         }
 
-        // Overrides (apply in both modes)
+        // Overrides from additionalFields (apply in both modes)
         if (additionalFields.errorCode) body.errorCode = additionalFields.errorCode;
         if (additionalFields.severity) body.severity = additionalFields.severity;
         if (additionalFields.executionUrl) body.executionUrl = additionalFields.executionUrl;
+        if (additionalFields.workflowId) body.workflowId = additionalFields.workflowId;
+        if (additionalFields.workflowName) body.workflowName = additionalFields.workflowName;
+        if (additionalFields.executionId) body.executionId = additionalFields.executionId;
 
         if (additionalFields.metadata) {
           try {
