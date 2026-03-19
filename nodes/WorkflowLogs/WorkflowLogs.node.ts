@@ -190,6 +190,33 @@ export class WorkflowLogs implements INodeType {
     const baseUrl = (credentials.baseUrl as string).replace(/\/$/, '');
     const apiKey = credentials.apiKey as string;
 
+    // Validate base URL to prevent SSRF attacks
+    try {
+      const parsedUrl = new URL(baseUrl);
+      if (!['https:', 'http:'].includes(parsedUrl.protocol)) {
+        throw new NodeOperationError(this.getNode(), 'Base URL must use HTTP or HTTPS protocol');
+      }
+      const hostname = parsedUrl.hostname;
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '0.0.0.0' ||
+        hostname === '::1' ||
+        hostname.startsWith('169.254.') ||
+        hostname.startsWith('10.') ||
+        hostname.startsWith('192.168.') ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+      ) {
+        throw new NodeOperationError(
+          this.getNode(),
+          'Base URL must not point to a private or loopback address',
+        );
+      }
+    } catch (error) {
+      if (error instanceof NodeOperationError) throw error;
+      throw new NodeOperationError(this.getNode(), 'Invalid Base URL format');
+    }
+
     // Auto-bind all available metadata from n8n context
     const workflow = this.getWorkflow();
     const executionId = this.getExecutionId();
@@ -244,9 +271,16 @@ export class WorkflowLogs implements INodeType {
 
         if (additionalFields.metadata) {
           try {
-            body.metadata = typeof additionalFields.metadata === 'string'
+            const parsed = typeof additionalFields.metadata === 'string'
               ? JSON.parse(additionalFields.metadata)
               : additionalFields.metadata;
+            // Prevent prototype pollution
+            if (parsed && typeof parsed === 'object') {
+              delete parsed.__proto__;
+              delete parsed.constructor;
+              delete parsed.prototype;
+            }
+            body.metadata = parsed;
           } catch {
             body.metadata = { raw: additionalFields.metadata };
           }
@@ -271,9 +305,10 @@ export class WorkflowLogs implements INodeType {
 
       } catch (error) {
         if (this.continueOnFail()) {
+          const errMsg = (error as Error).message || 'Unknown error';
           returnData.push({
             json: {
-              error: (error as Error).message,
+              error: errMsg.substring(0, 200),
               success: false,
             },
             pairedItem: { item: i },

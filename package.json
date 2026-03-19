@@ -18,6 +18,9 @@
     "url": "https://github.com/josephjoberno/n8n-nodes-workflowlogs"
   },
   "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
   "n8n": {
     "n8nNodesApiVersion": 1,
     "nodes": [
